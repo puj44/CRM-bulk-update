@@ -1,0 +1,95 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum BulkActionStatus {
+  queued
+  in_progress
+  completed
+  failed
+}
+
+enum ItemStatus {
+  pending
+  success
+  failed
+  skipped
+}
+
+enum SourceType {
+  json
+  csv
+  xlsx
+}
+
+// sample entity. email is NOT unique on purpose, real crm data has duplicates
+model Contact {
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String?
+  age       Int?
+  status    String   @default("lead")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([email])
+  @@index([status])
+  @@map("contacts")
+}
+
+model BulkAction {
+  id           String           @id @default(uuid()) @db.Uuid
+  accountId    String           @map("account_id")
+  entityType   String           @map("entity_type")
+  actionType   String           @map("action_type")
+  status       BulkActionStatus @default(queued)
+  sourceType   SourceType       @map("source_type")
+  // json requests keep their records here until the planner copies them into items
+  records      Json?
+  filePath     String?          @map("file_path")
+  totalCount   Int              @default(0) @map("total_count")
+  successCount Int              @default(0) @map("success_count")
+  failedCount  Int              @default(0) @map("failed_count")
+  skippedCount Int              @default(0) @map("skipped_count")
+  // true once every record has been read and split into batches
+  isPlanned    Boolean          @default(false) @map("is_planned")
+  errorMessage String?          @map("error_message")
+  createdAt    DateTime         @default(now()) @map("created_at")
+  startedAt    DateTime?        @map("started_at")
+  completedAt  DateTime?        @map("completed_at")
+  updatedAt    DateTime         @updatedAt @map("updated_at")
+
+  items BulkActionItem[]
+
+  @@index([accountId, createdAt])
+  @@index([status, createdAt])
+  @@map("bulk_actions")
+}
+
+// one row per record in the request, doubles as the per-entity log
+model BulkActionItem {
+  bulkActionId   String     @map("bulk_action_id") @db.Uuid
+  rowNumber      Int        @map("row_number")
+  entityId       Int?       @map("entity_id")
+  data           Json?
+  status         ItemStatus @default(pending)
+  message        String?
+  // only filled on the row that "won", used to spot repeats of the same email / entity
+  dedupeKey      String?    @map("dedupe_key")
+  dedupeEntityId Int?       @map("dedupe_entity_id")
+  processedAt    DateTime?  @map("processed_at")
+
+  bulkAction BulkAction @relation(fields: [bulkActionId], references: [id], onDelete: Cascade)
+
+  @@id([bulkActionId, rowNumber])
+  @@unique([bulkActionId, dedupeKey])
+  @@unique([bulkActionId, dedupeEntityId])
+  @@index([bulkActionId, status, rowNumber])
+  @@index([bulkActionId, entityId])
+  @@map("bulk_action_items")
+}

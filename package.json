@@ -1,0 +1,52 @@
+{
+  "name": "crm-bulk-actions",
+  "version": "1.0.0",
+  "description": "Bulk action platform for CRM entities (bulk update on contacts to start with)",
+  "private": true,
+  "main": "dist/server.js",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev:api": "tsx watch src/server.ts",
+    "dev:worker": "tsx watch src/worker.ts",
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc --noEmit",
+    "start:api": "node dist/server.js",
+    "start:worker": "node dist/worker.js",
+    "db:migrate": "prisma migrate dev",
+    "db:deploy": "prisma migrate deploy",
+    "db:seed": "tsx prisma/seed.ts",
+    "load-test": "tsx scripts/load-test.ts",
+    "postinstall": "prisma generate"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.10.0",
+    "bullmq": "^5.40.0",
+    "cors": "^2.8.5",
+    "csv-parse": "^5.6.0",
+    "dotenv": "^16.4.7",
+    "express": "^5.1.0",
+    "express-rate-limit": "^7.5.0",
+    "helmet": "^8.0.0",
+    "ioredis": "^5.4.2",
+    "multer": "^2.0.0",
+    "pino": "^9.6.0",
+    "rate-limit-redis": "^4.2.0",
+    "saxes": "^5.0.1",
+    "unzipper": "^0.10.14",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
+    "@types/multer": "^2.3.0",
+    "@types/node": "^20.19.43",
+    "@types/unzipper": "^0.10.11",
+    "exceljs": "^4.4.0",
+    "pino-pretty": "^13.0.0",
+    "prisma": "^6.10.0",
+    "tsx": "^4.23.15",
+    "typescript": "~5.9"
+  }
+}

@@ -1,0 +1,15 @@
+id,name,email,age,status
+1,Riya Shah M.,,29,
+3,Pujan M.,pujan@something.com,,
+2,,,35,
+999999,,,,customer
+5,,not-an-email,,
+6,,,,customer
+7,,Pujan@Something.com,,
+8,Isha R.,,,
+9,,,,customer
+4,,,,lead
+1,,,,prospect
+10,,,200,
+11,,,,vip
+12,Meera K.,meera.k@gmail.com,31,customer
